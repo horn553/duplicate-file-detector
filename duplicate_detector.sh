@@ -41,7 +41,55 @@ END {
     for (size in count) {
         if (count[size] > 1) {
             printf "\nSize: %d bytes (%d files)\n", size, count[size]
-            printf "%s", files[size]
+            
+            # ファイル名の類似度分析
+            split(files[size], file_list, "\n")
+            file_names = ""
+            for (i in file_list) {
+                if (file_list[i] != "") {
+                    # ファイル名のみ抽出 (パスからベースネーム)
+                    gsub(/.*\//, "", file_list[i])
+                    file_names = file_names file_list[i] "|"
+                }
+            }
+            
+            # ファイル毎にタグ付けして出力
+            split(files[size], file_list, "\n")
+            for (i in file_list) {
+                if (file_list[i] != "") {
+                    tag = get_likelihood_tag(file_list[i], file_names)
+                    printf "%s [%s]\n", file_list[i], tag
+                }
+            }
         }
+    }
+}
+
+function get_likelihood_tag(filepath, all_names) {
+    # ファイル名のみ抽出
+    filename = filepath
+    gsub(/.*\//, "", filename)
+    
+    # 他のファイル名との一致をチェック
+    split(all_names, names, "|")
+    exact_matches = 0
+    partial_matches = 0
+    
+    for (j in names) {
+        if (names[j] != "" && names[j] != filename) {
+            if (names[j] == filename) {
+                exact_matches++
+            } else if (index(names[j], filename) > 0 || index(filename, names[j]) > 0) {
+                partial_matches++
+            }
+        }
+    }
+    
+    if (exact_matches > 0) {
+        return "LIKELY"
+    } else if (partial_matches > 0) {
+        return "PROBABLY"
+    } else {
+        return "UNLIKELY"
     }
 }' "$TEMP_FILE"
