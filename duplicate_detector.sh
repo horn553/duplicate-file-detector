@@ -53,7 +53,7 @@ awk -v hash_cmd="$HASH_CMD" -v partial_size="$PARTIAL_READ_SIZE" '
 }
 END {
     for (size in count) {
-        if (count[size] > 1) {
+        if (count[size] > 1 && size >= 1048576) {
             printf "\nSize: %d bytes (%d files)\n", size, count[size]
             
             # ファイルリストを作成してハッシュ計算
