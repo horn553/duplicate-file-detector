@@ -47,13 +47,15 @@ echo "=========================="
 awk -v hash_cmd="$HASH_CMD" -v partial_size="$PARTIAL_READ_SIZE" '
 {
     size = $1
-    file = substr($0, index($0, " ") + 1)
-    files[size] = files[size] file "\n"
-    count[size]++
+    if (size >= 1048576) {
+        file = substr($0, index($0, " ") + 1)
+        files[size] = files[size] file "\n"
+        count[size]++
+    }
 }
 END {
     for (size in count) {
-        if (count[size] > 1 && size >= 1048576) {
+        if (count[size] > 1) {
             printf "\nSize: %d bytes (%d files)\n", size, count[size]
             
             # ファイルリストを作成してハッシュ計算
